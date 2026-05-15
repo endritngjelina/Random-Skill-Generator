@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillForge - Random Skill Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .background-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) translateX(0px); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) translateX(100px); opacity: 0; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            background: linear-gradient(45deg, #fff, #f0f8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 40px;
+            flex: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+        }
+
+        .wheel-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 40px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin-bottom: 30px;
+        }
+
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            transition: transform 4s cubic-bezier(0.23, 1, 0.32, 1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .wheel-segment {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: right bottom;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid #ff6b6b;
+            z-index: 10;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+        }
+
+        .spin-button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            border: none;
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .spin-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255, 107, 107, 0.4);
+        }
+
+        .spin-button:active {
+            transform: translateY(-1px);
+        }
+
+        .spin-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .stats-card, .result-card, .streak-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .stats-card h3, .result-card h3, .streak-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: #64ffda;
+        }
+
+        .result-card {
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .result-card.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .skill-name {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #64ffda;
+            margin-bottom: 10px;
+        }
+
+        .skill-description {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .skill-links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .skill-link {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .skill-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .streak-display {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .streak-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: #ffd93d;
+            text-shadow: 0 0 20px rgba(255, 217, 61, 0.5);
+        }
+
+        .streak-text {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #64ffda, #00bcd4);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .achievement-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(45deg, #ffd93d, #ff9a3c);
+            color: #333;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            z-index: 1000;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .achievement-popup.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .achievement-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ffd93d;
+            animation: confetti-fall 3s ease-out forwards;
+        }
+
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .daily-challenge {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .challenge-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .challenge-description {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="background-particles" id="particles"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>SkillForge</h1>
+            <p>Discover your next learning adventure</p>
+        </div>
+
+        <div class="main-content">
+            <div class="wheel-section">
+                <div class="wheel-container">
+                    <div class="wheel-pointer"></div>
+                    <div class="wheel" id="wheel"></div>
+                </div>
+                <button class="spin-button" id="spinButton" onclick="spinWheel()">
+                    🎯 Forge New Skill
+                </button>
+            </div>
+
+            <div class="sidebar">
+                <div class="daily-challenge">
+                    <div class="challenge-title">🏆 Daily Challenge</div>
+                    <div class="challenge-description">Spin 3 times today to unlock bonus XP!</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="dailyProgress"></div>
+                    </div>
+                </div>
+
+                <div class="streak-card">
+                    <h3>🔥 Learning Streak</h3>
+                    <div class="streak-display">
+                        <div class="streak-number" id="streakNumber">0</div>
+                        <div class="streak-text">days strong</div>
+                    </div>
+                </div>
+
+                <div class="stats-card">
+                    <h3>📊 Your Stats</h3>
+                    <div class="stat-item">
+                        <span>Skills Discovered</span>
+                        <span class="stat-value" id="skillsDiscovered">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Total Spins</span>
+                        <span class="stat-value" id="totalSpins">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Level</span>
+                        <span class="stat-value" id="userLevel">1</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>XP</span>
+                        <span class="stat-value" id="userXP">0</span>
+                    </div>
+                </div>
+
+                <div class="result-card" id="resultCard">
+                    <div class="skill-name" id="skillName">Spin to discover!</div>
+                    <div class="skill-description" id="skillDescription">Click the button above to get your random skill for today.</div>
+                    <div class="skill-links" id="skillLinks"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="achievement-popup" id="achievementPopup">
+        <div class="achievement-title" id="achievementTitle"></div>
+        <div id="achievementDescription"></div>
+    </div>
+
+    <script>
+        const skills = [
+            {
+                name: "Adobe Photoshop",
+                description: "Master digital image editing and photo manipulation with industry-standard tools.",
+                links: [
+                    { text: "Adobe Official Tutorials", url: "https://helpx.adobe.com/photoshop/tutorials.html" },
+                    { text: "YouTube Crash Course", url: "https://www.youtube.com/results?search_query=photoshop+tutorial+2024" }
+                ]
+            },
+            {
+                name: "Web Development",
+                description: "Learn HTML, CSS, and JavaScript to build modern, responsive websites.",
+                links: [
+                    { text: "FreeCodeCamp", url: "https://www.freecodecamp.org/" },
+                    { text: "MDN Web Docs", url: "https://developer.mozilla.org/en-US/" }
+                ]
+            },
+            {
+                name: "UI/UX Design",
+                description: "Create intuitive and beautiful user interfaces and experiences.",
+                links: [
+                    { text: "Figma Academy", url: "https://www.figma.com/academy/" },
+                    { text: "UX Design Course", url: "https://www.coursera.org/specializations/ui-ux-design" }
+                ]
+            },
+            {
+                name: "Python Programming",
+                description: "Learn one of the most versatile programming languages for automation and data science.",
+                links: [
+                    { text: "Python.org Tutorial", url: "https://docs.python.org/3/tutorial/" },
+                    { text: "Codecademy Python", url: "https://www.codecademy.com/learn/learn-python-3" }
+                ]
+            },
+            {
+                name: "Digital Marketing",
+                description: "Master online marketing strategies, SEO, and social media marketing.",
+                links: [
+                    { text: "Google Digital Garage", url: "https://learndigital.withgoogle.com/digitalgarage" },
+                    { text: "HubSpot Academy", url: "https://academy.hubspot.com/" }
+                ]
+            },
+            {
+                name: "Video Editing",
+                description: "Create compelling video content with professional editing techniques.",
+                links: [
+                    { text: "Adobe Premiere Tutorials", url: "https://helpx.adobe.com/premiere-pro/tutorials.html" },
+                    { text: "DaVinci Resolve Training", url: "https://www.blackmagicdesign.com/products/davinciresolve/training" }
+                ]
+            },
+            {
+                name: "3D Modeling",
+                description: "Learn to create stunning 3D models and animations for games and films.",
+                links: [
+                    { text: "Blender Guru", url: "https://www.youtube.com/user/AndrewPPrice" },
+                    { text: "Blender Foundation", url: "https://www.blender.org/support/tutorials/" }
+                ]
+            },
+            {
+                name: "Data Science",
+                description: "Analyze data and extract insights using statistical methods and machine learning.",
+                links: [
+                    { text: "Kaggle Learn", url: "https://www.kaggle.com/learn" },
+                    { text: "DataCamp", url: "https://www.datacamp.com/" }
+                ]
+            }
+        ];
+
+        let userData = {
+            skillsDiscovered: 0,
+            totalSpins: 0,
+            userLevel: 1,
+            userXP: 0,
+            streak: 0,
+            dailySpins: 0,
+            lastSpinDate: null,
+            discoveredSkills: []
+        };
+
+        let isSpinning = false;
+
+        // Load user data from localStorage
+        function loadUserData() {
+            const saved = localStorage.getItem('skillForgeData');
+            if (saved) {
+                userData = { ...userData, ...JSON.parse(saved) };
+                updateStats();
+                updateDailyProgress();
+                
+                // Check if streak should continue
+                const today = new Date().toDateString();
+                if (userData.lastSpinDate !== today) {
+                    const lastDate = new Date(userData.lastSpinDate || 0);
+                    const daysDiff = Math.floor((new Date() - lastDate) / (1000 * 60 * 60 * 24));
+                    if (daysDiff > 1) {
+                        userData.streak = 0;
+                        userData.dailySpins = 0;
+                    }
+                }
+            }
+        }
+
+        // Save user data to localStorage
+        function saveUserData() {
+            localStorage.setItem('skillForgeData', JSON.stringify(userData));
+        }
+
+        // Initialize wheel
+        function initializeWheel() {
+            const wheel = document.getElementById('wheel');
+            const segmentAngle = 360 / skills.length;
+            
+            skills.forEach((skill, index) => {
+                const segment = document.createElement('div');
+                segment.className = 'wheel-segment';
+                segment.style.transform = `rotate(${index * segmentAngle}deg)`;
+                segment.style.background = `hsl(${index * (360 / skills.length)}, 70%, 60%)`;
+                segment.textContent = skill.name;
+                wheel.appendChild(segment);
+            });
+        }
+
+        // Create floating particles
+        function createParticles() {
+            const particleContainer = document.getElementById('particles');
+            
+            setInterval(() => {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                particle.style.animationDelay = Math.random() * 2 + 's';
+                particleContainer.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 25000);
+            }, 2000);
+        }
+
+        // Spin wheel function
+        function spinWheel() {
+            if (isSpinning) return;
+            
+            isSpinning = true;
+            const button = document.getElementById('spinButton');
+            button.disabled = true;
+            button.textContent = '🎯 Spinning...';
+            
+            const wheel = document.getElementById('wheel');
+            const randomIndex = Math.floor(Math.random() * skills.length);
+            const segmentAngle = 360 / skills.length;
+            const targetAngle = (randomIndex * segmentAngle) + (segmentAngle / 2);
+            const spins = 5 + Math.random() * 5; // 5-10 full rotations
+            const finalRotation = (spins * 360) + (360 - targetAngle);
+            
+            wheel.style.transform = `rotate(${finalRotation}deg)`;
+            
+            setTimeout(() => {
+                displayResult(skills[randomIndex]);
+                updateUserProgress(skills[randomIndex]);
+                
+                isSpinning = false;
+                button.disabled = false;
+                button.textContent = '🎯 Forge New Skill';
+                
+                // Create confetti effect
+                createConfetti();
+            }, 4000);
+        }
+
+        // Display result
+        function displayResult(skill) {
+            const resultCard = document.getElementById('resultCard');
+            const skillName = document.getElementById('skillName');
+            const skillDescription = document.getElementById('skillDescription');
+            const skillLinks = document.getElementById('skillLinks');
+            
+            skillName.textContent = skill.name;
+            skillDescription.textContent = skill.description;
+            
+            skillLinks.innerHTML = '';
+            skill.links.forEach(link => {
+                const linkElement = document.createElement('a');
+                linkElement.href = link.url;
+                linkElement.textContent = link.text;
+                linkElement.className = 'skill-link';
+                linkElement.target = '_blank';
+                skillLinks.appendChild(linkElement);
+            });
+            
+            resultCard.classList.add('show');
+        }
+
+        // Update user progress
+        function updateUserProgress(skill) {
+            userData.totalSpins++;
+            userData.userXP += 10;
+            userData.dailySpins++;
+            
+            const today = new Date().toDateString();
+            if (userData.lastSpinDate !== today) {
+                if (userData.lastSpinDate) {
+                    const lastDate = new Date(userData.lastSpinDate);
+                    const daysDiff = Math.floor((new Date() - lastDate) / (1000 * 60 * 60 * 24));
+                    if (daysDiff === 1) {
+                        userData.streak++;
+                    } else {
+                        userData.streak = 1;
+                    }
+                } else {
+                    userData.streak = 1;
+                }
+                userData.lastSpinDate = today;
+            }
+            
+            if (!userData.discoveredSkills.includes(skill.name)) {
+                userData.discoveredSkills.push(skill.name);
+                userData.skillsDiscovered++;
+                userData.userXP += 25; // Bonus XP for new skill
+            }
+            
+            // Level up system
+            const xpPerLevel = 100;
+            const newLevel = Math.floor(userData.userXP / xpPerLevel) + 1;
+            if (newLevel > userData.userLevel) {
+                userData.userLevel = newLevel;
+                showAchievement("Level Up!", `You've reached level ${newLevel}! 🎉`);
+            }
+            
+            // Check for achievements
+            checkAchievements();
+            
+            updateStats();
+            updateDailyProgress();
+            saveUserData();
+        }
+
+        // Update stats display
+        function updateStats() {
+            document.getElementById('skillsDiscovered').textContent = userData.skillsDiscovered;
+            document.getElementById('totalSpins').textContent = userData.totalSpins;
+            document.getElementById('userLevel').textContent = userData.userLevel;
+            document.getElementById('userXP').textContent = userData.userXP;
+            document.getElementById('streakNumber').textContent = userData.streak;
+        }
+
+        // Update daily progress
+        function updateDailyProgress() {
+            const progress = Math.min((userData.dailySpins / 3) * 100, 100);
+            document.getElementById('dailyProgress').style.width = progress + '%';
+        }
+
+        // Check for achievements
+        function checkAchievements() {
+            if (userData.totalSpins === 10 && !localStorage.getItem('achievement_10spins')) {
+                localStorage.setItem('achievement_10spins', 'true');
+                showAchievement("Dedicated Learner", "You've spun 10 times! 🎯");
+            }
+            
+            if (userData.streak === 7 && !localStorage.getItem('achievement_7streak')) {
+                localStorage.setItem('achievement_7streak', 'true');
+                showAchievement("Week Warrior", "7 day learning streak! 🔥");
+            }
+            
+            if (userData.skillsDiscovered === 5 && !localStorage.getItem('achievement_5skills')) {
+                localStorage.setItem('achievement_5skills', 'true');
+                showAchievement("Skill Explorer", "Discovered 5 different skills! 🗺️");
+            }
+        }
+
+        // Show achievement popup
+        function showAchievement(title, description) {
+            const popup = document.getElementById('achievementPopup');
+            document.getElementById('achievementTitle').textContent = title;
+            document.getElementById('achievementDescription').textContent = description;
+            
+            popup.classList.add('show');
+            setTimeout(() => popup.classList.remove('show'), 3000);
+        }
+
+        // Create confetti effect
+        function createConfetti() {
+            const colors = ['#ffd93d', '#ff9a3c', '#ff6b6b', '#64ffda', '#667eea'];
+            
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 1 + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 3000);
+                }, i * 50);
+            }
+        }
+
+        // Initialize everything
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            initializeWheel();
+            createParticles();
+            updateStats();
+            updateDailyProgress();
+        });
+    </script>
+</body>
+</html>
