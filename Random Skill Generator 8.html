@@ -1,0 +1,1376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillSpin Pro - Random Skill Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #fff, #f0f8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .tagline {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1rem;
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+            color: white;
+            background: rgba(255,255,255,0.15);
+            padding: 18px 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.25);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .stat:hover::before {
+            left: 100%;
+        }
+
+        .stat:hover {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 
+                0 15px 35px rgba(0,0,0,0.25),
+                0 5px 15px rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.35);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: linear-gradient(45deg, #fff, #f0f8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 40px;
+            align-items: start;
+        }
+
+        .wheel-section {
+            background: rgba(255,255,255,0.95);
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 
+                0 20px 50px rgba(0,0,0,0.15),
+                0 5px 20px rgba(0,0,0,0.1),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.3);
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .wheel-section::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, #667eea, #764ba2, #ff6b6b, #4ecdc4);
+            border-radius: 32px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .wheel-section:hover::before {
+            opacity: 0.1;
+        }
+
+        .wheel-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 25px 60px rgba(0,0,0,0.2),
+                0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .wheel-container {
+            position: relative;
+            margin: 30px auto;
+        }
+
+        .wheel {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 15px 40px rgba(0,0,0,0.4),
+                0 5px 20px rgba(0,0,0,0.2),
+                inset 0 2px 10px rgba(255,255,255,0.2),
+                inset 0 -2px 10px rgba(0,0,0,0.1);
+            transition: transform 3s cubic-bezier(0.23, 1, 0.320, 1);
+            background: conic-gradient(
+                from 0deg,
+                #ff6b6b 0deg 45deg,
+                #4ecdc4 45deg 90deg,
+                #45b7d1 90deg 135deg,
+                #96ceb4 135deg 180deg,
+                #feca57 180deg 225deg,
+                #ff9ff3 225deg 270deg,
+                #54a0ff 270deg 315deg,
+                #5f27cd 315deg 360deg
+            );
+            animation: subtleGlow 4s ease-in-out infinite alternate;
+        }
+
+        @keyframes subtleGlow {
+            0% { 
+                box-shadow: 
+                    0 15px 40px rgba(0,0,0,0.4),
+                    0 5px 20px rgba(0,0,0,0.2),
+                    inset 0 2px 10px rgba(255,255,255,0.2),
+                    inset 0 -2px 10px rgba(0,0,0,0.1),
+                    0 0 20px rgba(102, 126, 234, 0.3);
+            }
+            100% { 
+                box-shadow: 
+                    0 15px 40px rgba(0,0,0,0.4),
+                    0 5px 20px rgba(0,0,0,0.2),
+                    inset 0 2px 10px rgba(255,255,255,0.2),
+                    inset 0 -2px 10px rgba(0,0,0,0.1),
+                    0 0 30px rgba(255, 107, 107, 0.4);
+            }
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid #ff4757;
+            z-index: 10;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.4));
+            animation: pointerPulse 2s ease-in-out infinite;
+        }
+
+        .wheel-pointer::after {
+            content: '';
+            position: absolute;
+            top: -38px;
+            left: -15px;
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, #ff4757, #ff3742);
+            border-radius: 50%;
+            box-shadow: 
+                0 2px 8px rgba(255, 71, 87, 0.4),
+                inset 0 1px 2px rgba(255,255,255,0.3);
+        }
+
+        @keyframes pointerPulse {
+            0%, 100% { 
+                filter: drop-shadow(0 5px 10px rgba(0,0,0,0.4)) drop-shadow(0 0 10px rgba(255, 71, 87, 0.5));
+            }
+            50% { 
+                filter: drop-shadow(0 5px 10px rgba(0,0,0,0.4)) drop-shadow(0 0 20px rgba(255, 71, 87, 0.8));
+            }
+        }
+
+        .wheel-sectors {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .sector {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            clip-path: polygon(50% 50%, 100% 0%, 100% 12.5%);
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-end;
+            padding: 20px;
+        }
+
+        .sector-text {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            transform: rotate(-22.5deg);
+            margin-right: 10px;
+        }
+
+        .spin-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #ff6b6b 100%);
+            color: white;
+            border: none;
+            padding: 18px 45px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 
+                0 8px 25px rgba(102, 126, 234, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            margin-top: 30px;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            backdrop-filter: blur(10px);
+        }
+
+        .spin-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .spin-btn:hover::before {
+            left: 100%;
+        }
+
+        .spin-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 
+                0 15px 40px rgba(102, 126, 234, 0.6),
+                0 5px 15px rgba(255, 107, 107, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            filter: brightness(1.1);
+        }
+
+        .spin-btn:active {
+            transform: translateY(-2px) scale(1.02);
+            transition: all 0.1s ease;
+        }
+
+        .spin-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            filter: grayscale(0.3);
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .result-card {
+            background: rgba(255,255,255,0.98);
+            padding: 35px;
+            border-radius: 25px;
+            box-shadow: 
+                0 20px 50px rgba(0,0,0,0.12),
+                0 5px 20px rgba(0,0,0,0.08),
+                inset 0 1px 0 rgba(255,255,255,0.9);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.3);
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.8s ease;
+        }
+
+        .result-card.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        .result-card.show::before {
+            left: 100%;
+        }
+
+        .result-card:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 
+                0 25px 60px rgba(0,0,0,0.15),
+                0 10px 30px rgba(0,0,0,0.1),
+                inset 0 1px 0 rgba(255,255,255,0.9);
+        }
+
+        .skill-title {
+            font-size: 1.7rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #2c3e50, #34495e, #667eea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 18px;
+            position: relative;
+            animation: titleSlideIn 0.6s ease-out;
+        }
+
+        .skill-title::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 2px;
+            animation: underlineExpand 0.8s ease-out 0.3s both;
+        }
+
+        @keyframes titleSlideIn {
+            0% { 
+                opacity: 0; 
+                transform: translateY(-20px);
+            }
+            100% { 
+                opacity: 1; 
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes underlineExpand {
+            0% { width: 0; }
+            100% { width: 60px; }
+        }
+
+        .skill-description {
+            color: #5a6c7d;
+            line-height: 1.7;
+            margin-bottom: 25px;
+            font-size: 1.05rem;
+            animation: fadeInUp 0.6s ease-out 0.2s both;
+            text-align: justify;
+        }
+
+        @keyframes fadeInUp {
+            0% { 
+                opacity: 0; 
+                transform: translateY(15px);
+            }
+            100% { 
+                opacity: 1; 
+                transform: translateY(0);
+            }
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .tag::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .tag:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+            filter: brightness(1.1);
+        }
+
+        .tag:hover::before {
+            left: 100%;
+        }
+
+        .learning-resources {
+            margin-top: 20px;
+        }
+
+        .resource-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .resource-link {
+            display: flex;
+            align-items: center;
+            padding: 15px 22px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 15px;
+            margin-bottom: 12px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 6px 20px rgba(79, 172, 254, 0.3),
+                inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+
+        .resource-link::before {
+            content: '🔗';
+            margin-right: 12px;
+            font-size: 1.1em;
+            transition: transform 0.3s ease;
+        }
+
+        .resource-link::after {
+            content: '→';
+            margin-left: auto;
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+            opacity: 0.8;
+        }
+
+        .resource-link:hover {
+            transform: translateX(8px) translateY(-2px);
+            box-shadow: 
+                0 10px 30px rgba(79, 172, 254, 0.5),
+                0 5px 15px rgba(0, 242, 254, 0.3);
+            filter: brightness(1.1);
+        }
+
+        .resource-link:hover::before {
+            transform: rotate(15deg) scale(1.2);
+        }
+
+        .resource-link:hover::after {
+            transform: translateX(5px);
+            opacity: 1;
+        }
+
+        .resource-link:active {
+            transform: translateX(4px) translateY(-1px) scale(0.98);
+        }
+
+        .achievements {
+            background: rgba(255,255,255,0.95);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .achievement-title {
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .achievement-item:last-child {
+            border-bottom: none;
+        }
+
+        .achievement-item.unlocked {
+            color: #27ae60;
+            animation: unlockGlow 0.8s ease-out;
+        }
+
+        .achievement-icon {
+            width: 30px;
+            height: 30px;
+            margin-right: 15px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .streak-counter {
+            background: linear-gradient(135deg, #ffa726 0%, #ffb74d 50%, #ffcc02 100%);
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 10px 30px rgba(255, 167, 38, 0.4),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+            animation: streakGlow 3s ease-in-out infinite alternate;
+        }
+
+        .streak-counter::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes streakGlow {
+            0% { 
+                box-shadow: 
+                    0 10px 30px rgba(255, 167, 38, 0.4),
+                    inset 0 1px 0 rgba(255,255,255,0.3),
+                    0 0 20px rgba(255, 204, 2, 0.3);
+            }
+            100% { 
+                box-shadow: 
+                    0 10px 30px rgba(255, 167, 38, 0.4),
+                    inset 0 1px 0 rgba(255,255,255,0.3),
+                    0 0 40px rgba(255, 204, 2, 0.6);
+            }
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .streak-counter:hover {
+            transform: scale(1.05);
+            transition: transform 0.3s ease;
+        }
+
+        .streak-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .progress-bar {
+            background: rgba(0,0,0,0.08);
+            height: 12px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #ff6b6b 100%);
+            transition: width 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 2px 8px rgba(102, 126, 234, 0.3),
+                inset 0 1px 2px rgba(255,255,255,0.3);
+        }
+
+        .progress-fill::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: progressShine 2s ease-in-out infinite;
+        }
+
+        @keyframes progressShine {
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: 100%; }
+        }
+
+
+        @keyframes unlockGlow {
+            0% { box-shadow: 0 0 0 rgba(39, 174, 96, 0.7); }
+            50% { box-shadow: 0 0 20px rgba(39, 174, 96, 0.7); }
+            100% { box-shadow: 0 0 0 rgba(39, 174, 96, 0.7); }
+        }
+
+        @keyframes spinWheel {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(1800deg); }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .stats-bar {
+                gap: 20px;
+            }
+            
+            .stat {
+                padding: 10px 15px;
+            }
+            
+            .wheel {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .wheel-section {
+                padding: 25px;
+            }
+        }
+
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 8s infinite linear;
+        }
+
+        .particle:nth-child(odd) {
+            width: 6px;
+            height: 6px;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.6), rgba(102, 126, 234, 0.1));
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.4);
+        }
+
+        .particle:nth-child(even) {
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, rgba(255, 107, 107, 0.6), rgba(255, 107, 107, 0.1));
+            box-shadow: 0 0 8px rgba(255, 107, 107, 0.4);
+        }
+
+        .particle:nth-child(3n) {
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, rgba(118, 75, 162, 0.5), rgba(118, 75, 162, 0.1));
+            box-shadow: 0 0 12px rgba(118, 75, 162, 0.3);
+            animation-duration: 10s;
+        }
+
+        @keyframes float {
+            0% { 
+                transform: translateY(100vh) translateX(0px) rotate(0deg) scale(0); 
+                opacity: 0; 
+            }
+            5% { 
+                opacity: 1; 
+                transform: translateY(95vh) translateX(10px) rotate(45deg) scale(1); 
+            }
+            95% { 
+                opacity: 1; 
+                transform: translateY(5vh) translateX(-10px) rotate(315deg) scale(1); 
+            }
+            100% { 
+                transform: translateY(-5vh) translateX(0px) rotate(360deg) scale(0); 
+                opacity: 0; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+    
+    <div class="container">
+        <header>
+            <div class="logo">🎯 SkillSpin Pro</div>
+            <div class="tagline">Gamify Your Learning Journey • Unlock New Skills Daily</div>
+            
+            <div class="stats-bar">
+                <div class="stat">
+                    <div class="stat-number" id="totalSkills">247</div>
+                    <div class="stat-label">Skills Available</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="totalSpins">0</div>
+                    <div class="stat-label">Total Spins</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="skillsLearned">0</div>
+                    <div class="stat-label">Skills Learned</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number" id="currentLevel">1</div>
+                    <div class="stat-label">Level</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="wheel-section">
+                <h2 style="margin-bottom: 25px; color: #2c3e50; font-weight: 800; font-size: 1.8rem; background: linear-gradient(135deg, #2c3e50, #667eea); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Spin the Wheel of Knowledge</h2>
+                <p style="color: #5a6c7d; margin-bottom: 35px; font-size: 1.1rem; font-weight: 500;">🚀 Click spin to discover your next skill adventure and unlock your potential!</p>
+                
+                <div class="wheel-container">
+                    <div class="wheel-pointer"></div>
+                    <div class="wheel" id="wheel">
+                        <div class="wheel-sectors" id="sectors"></div>
+                    </div>
+                </div>
+                
+                <button class="spin-btn" id="spinBtn" onclick="spinWheel()">
+                    🚀 SPIN TO LEARN
+                </button>
+                
+                <div style="margin-top: 35px; padding: 25px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%); border-radius: 20px; border: 1px solid rgba(102, 126, 234, 0.1);">
+                    <div style="font-weight: 700; margin-bottom: 15px; color: #2c3e50; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.2rem;">🎯</span>
+                        Daily Challenge Progress
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="dailyProgress" style="width: 0%"></div>
+                    </div>
+                    <div style="font-size: 0.95rem; color: #666; margin-top: 10px; text-align: center;">Spin 5 times today to unlock bonus rewards! 🏆</div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="streak-counter">
+                    <div class="streak-number" id="streakCount">0</div>
+                    <div>Day Learning Streak 🔥</div>
+                </div>
+
+                <div class="result-card" id="resultCard">
+                    <div class="skill-title" id="skillTitle">Ready to Spin?</div>
+                    <div class="skill-description" id="skillDescription">
+                        Click the spin button to discover a new skill to master today. Each skill comes with curated learning resources and achievement tracking.
+                    </div>
+                    <div class="skill-tags" id="skillTags"></div>
+                    
+                    <div class="learning-resources" id="resources" style="display: none;">
+                        <div class="resource-title">🎓 Start Learning:</div>
+                        <div id="resourceLinks"></div>
+                    </div>
+                </div>
+
+                <div class="achievements">
+                    <div class="achievement-title" style="font-weight: 800; margin-bottom: 25px; color: #2c3e50; font-size: 1.3rem; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.4rem;">🏆</span>
+                        Achievements
+                        <span style="margin-left: auto; font-size: 0.9rem; color: #667eea; font-weight: 600;">
+                            ${Object.values(gameState?.achievements || {}).filter(Boolean).length}/6
+                        </span>
+                    </div>
+                    <div id="achievementsList">
+                        <div class="achievement-item" id="firstSpin">
+                            <div class="achievement-icon">🎯</div>
+                            <div>First Spin - Spin the wheel once</div>
+                        </div>
+                        <div class="achievement-item" id="fiveSpins">
+                            <div class="achievement-icon">🎪</div>
+                            <div>Spin Master - Complete 5 spins</div>
+                        </div>
+                        <div class="achievement-item" id="dailyChallenge">
+                            <div class="achievement-icon">📅</div>
+                            <div>Daily Achiever - Complete daily challenge</div>
+                        </div>
+                        <div class="achievement-item" id="weekStreak">
+                            <div class="achievement-icon">🔥</div>
+                            <div>Week Warrior - 7-day learning streak</div>
+                        </div>
+                        <div class="achievement-item" id="skillExplorer">
+                            <div class="achievement-icon">🗺️</div>
+                            <div>Skill Explorer - Try 10 different categories</div>
+                        </div>
+                        <div class="achievement-item" id="levelUp">
+                            <div class="achievement-icon">⭐</div>
+                            <div>Level Up - Reach Level 5</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Comprehensive skills database with categories and resources
+        const skillsDatabase = {
+            "Programming": [
+                {
+                    name: "Python Programming",
+                    description: "Learn the versatile programming language used in web development, data science, AI, and automation. Perfect for beginners and powerful for experts.",
+                    tags: ["Programming", "Backend", "Data Science", "AI"],
+                    resources: [
+                        { name: "Python.org Official Tutorial", url: "https://docs.python.org/3/tutorial/" },
+                        { name: "Codecademy Python Course", url: "https://www.codecademy.com/learn/learn-python-3" },
+                        { name: "Automate the Boring Stuff", url: "https://automatetheboringstuff.com/" }
+                    ]
+                },
+                {
+                    name: "JavaScript ES6+",
+                    description: "Master modern JavaScript features including arrow functions, promises, async/await, and modules for contemporary web development.",
+                    tags: ["Programming", "Frontend", "Web Development"],
+                    resources: [
+                        { name: "MDN JavaScript Guide", url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide" },
+                        { name: "JavaScript.info", url: "https://javascript.info/" },
+                        { name: "freeCodeCamp JavaScript", url: "https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures/" }
+                    ]
+                },
+                {
+                    name: "React.js Development",
+                    description: "Build dynamic user interfaces with React's component-based architecture, hooks, and state management patterns.",
+                    tags: ["Programming", "Frontend", "React", "UI/UX"],
+                    resources: [
+                        { name: "React Official Docs", url: "https://react.dev/" },
+                        { name: "React Tutorial by Meta", url: "https://reactjs.org/tutorial/tutorial.html" },
+                        { name: "Scrimba React Course", url: "https://scrimba.com/learn/learnreact" }
+                    ]
+                }
+            ],
+            "Data Science": [
+                {
+                    name: "Machine Learning Fundamentals",
+                    description: "Understand core ML concepts including supervised/unsupervised learning, model training, and evaluation metrics.",
+                    tags: ["Data Science", "AI", "Machine Learning", "Python"],
+                    resources: [
+                        { name: "Coursera ML Course", url: "https://www.coursera.org/learn/machine-learning" },
+                        { name: "Scikit-learn Documentation", url: "https://scikit-learn.org/stable/tutorial/index.html" },
+                        { name: "Kaggle Learn ML", url: "https://www.kaggle.com/learn/intro-to-machine-learning" }
+                    ]
+                },
+                {
+                    name: "Data Visualization",
+                    description: "Create compelling charts, graphs, and dashboards to communicate data insights effectively using modern tools.",
+                    tags: ["Data Science", "Visualization", "Analytics", "Design"],
+                    resources: [
+                        { name: "D3.js Tutorial", url: "https://d3js.org/" },
+                        { name: "Tableau Public Training", url: "https://public.tableau.com/en-us/s/resources" },
+                        { name: "Matplotlib Tutorial", url: "https://matplotlib.org/stable/tutorials/index.html" }
+                    ]
+                }
+            ],
+            "Design": [
+                {
+                    name: "UI/UX Design Principles",
+                    description: "Learn user-centered design principles, wireframing, prototyping, and usability testing for digital products.",
+                    tags: ["Design", "UI/UX", "User Research", "Prototyping"],
+                    resources: [
+                        { name: "Google UX Design Course", url: "https://www.coursera.org/professional-certificates/google-ux-design" },
+                        { name: "Figma Academy", url: "https://www.figma.com/academy/" },
+                        { name: "Nielsen Norman Group", url: "https://www.nngroup.com/articles/" }
+                    ]
+                },
+                {
+                    name: "Graphic Design",
+                    description: "Master visual communication through typography, color theory, composition, and digital design tools.",
+                    tags: ["Design", "Graphics", "Visual Arts", "Adobe"],
+                    resources: [
+                        { name: "Adobe Design Basics", url: "https://www.adobe.com/creativecloud/design/discover.html" },
+                        { name: "Canva Design School", url: "https://www.canva.com/designschool/" },
+                        { name: "Behance Tutorials", url: "https://www.behance.net/" }
+                    ]
+                }
+            ],
+            "Business": [
+                {
+                    name: "Digital Marketing",
+                    description: "Learn SEO, social media marketing, content strategy, and analytics to grow businesses online.",
+                    tags: ["Business", "Marketing", "SEO", "Social Media"],
+                    resources: [
+                        { name: "Google Digital Marketing", url: "https://skillshop.withgoogle.com/" },
+                        { name: "HubSpot Academy", url: "https://academy.hubspot.com/" },
+                        { name: "Facebook Blueprint", url: "https://www.facebook.com/business/learn" }
+                    ]
+                },
+                {
+                    name: "Project Management",
+                    description: "Master Agile, Scrum, and traditional project management methodologies to lead teams effectively.",
+                    tags: ["Business", "Management", "Agile", "Leadership"],
+                    resources: [
+                        { name: "PMI Resources", url: "https://www.pmi.org/learning" },
+                        { name: "Atlassian Agile Guide", url: "https://www.atlassian.com/agile" },
+                        { name: "Coursera Project Management", url: "https://www.coursera.org/professional-certificates/google-project-management" }
+                    ]
+                }
+            ],
+            "Creative": [
+                {
+                    name: "Video Production",
+                    description: "Learn video editing, color grading, audio mixing, and storytelling techniques for compelling content creation.",
+                    tags: ["Creative", "Video", "Editing", "Storytelling"],
+                    resources: [
+                        { name: "Adobe Premiere Pro Tutorials", url: "https://helpx.adobe.com/premiere-pro/tutorials.html" },
+                        { name: "YouTube Creator Academy", url: "https://creatoracademy.youtube.com/" },
+                        { name: "DaVinci Resolve Training", url: "https://www.blackmagicdesign.com/products/davinciresolve/training" }
+                    ]
+                },
+                {
+                    name: "Photography",
+                    description: "Master composition, lighting, post-processing, and various photography genres from portraits to landscapes.",
+                    tags: ["Creative", "Photography", "Visual Arts", "Editing"],
+                    resources: [
+                        { name: "Adobe Lightroom Tutorials", url: "https://helpx.adobe.com/lightroom/tutorials.html" },
+                        { name: "PetaPixel Learn", url: "https://petapixel.com/learn/" },
+                        { name: "CreativeLive Photography", url: "https://www.creativelive.com/photography" }
+                    ]
+                }
+            ],
+            "Technology": [
+                {
+                    name: "Cloud Computing (AWS)",
+                    description: "Learn Amazon Web Services fundamentals including EC2, S3, Lambda, and cloud architecture patterns.",
+                    tags: ["Technology", "Cloud", "AWS", "DevOps"],
+                    resources: [
+                        { name: "AWS Training", url: "https://aws.amazon.com/training/" },
+                        { name: "AWS Free Tier", url: "https://aws.amazon.com/free/" },
+                        { name: "A Cloud Guru", url: "https://acloudguru.com/" }
+                    ]
+                },
+                {
+                    name: "Cybersecurity Basics",
+                    description: "Understand network security, threat detection, encryption, and best practices for digital safety.",
+                    tags: ["Technology", "Security", "Networks", "Privacy"],
+                    resources: [
+                        { name: "Cybrary Free Courses", url: "https://www.cybrary.it/" },
+                        { name: "NIST Cybersecurity Framework", url: "https://www.nist.gov/cyberframework" },
+                        { name: "Coursera Cybersecurity", url: "https://www.coursera.org/specializations/cyber-security" }
+                    ]
+                }
+            ]
+        };
+
+        // Game state
+        let gameState = {
+            totalSpins: 0,
+            skillsLearned: 0,
+            currentLevel: 1,
+            streakCount: 0,
+            dailySpins: 0,
+            lastSpinDate: null,
+            achievements: {
+                firstSpin: false,
+                fiveSpins: false,
+                dailyChallenge: false,
+                weekStreak: false,
+                skillExplorer: false,
+                levelUp: false
+            },
+            categoriesExplored: new Set()
+        };
+
+        // Load game state from localStorage
+        function loadGameState() {
+            const saved = localStorage.getItem('skillSpinGameState');
+            if (saved) {
+                const loadedState = JSON.parse(saved);
+                gameState = { ...gameState, ...loadedState };
+                gameState.categoriesExplored = new Set(loadedState.categoriesExplored || []);
+                updateUI();
+            }
+        }
+
+        // Save game state to localStorage
+        function saveGameState() {
+            const stateToSave = {
+                ...gameState,
+                categoriesExplored: Array.from(gameState.categoriesExplored)
+            };
+            localStorage.setItem('skillSpinGameState', JSON.stringify(stateToSave));
+        }
+
+        // Get all skills as flat array
+        function getAllSkills() {
+            const allSkills = [];
+            Object.keys(skillsDatabase).forEach(category => {
+                skillsDatabase[category].forEach(skill => {
+                    allSkills.push({ ...skill, category });
+                });
+            });
+            return allSkills;
+        }
+
+        // Initialize wheel sectors
+        function initializeWheel() {
+            const sectors = document.getElementById('sectors');
+            const categories = Object.keys(skillsDatabase);
+            
+            categories.forEach((category, index) => {
+                const sector = document.createElement('div');
+                sector.className = 'sector';
+                sector.style.transform = `rotate(${index * 45}deg)`;
+                
+                const text = document.createElement('div');
+                text.className = 'sector-text';
+                text.textContent = category;
+                sector.appendChild(text);
+                
+                sectors.appendChild(sector);
+            });
+        }
+
+        // Spin wheel animation and logic
+        function spinWheel() {
+            const spinBtn = document.getElementById('spinBtn');
+            const wheel = document.getElementById('wheel');
+            
+            // Disable button during spin
+            spinBtn.disabled = true;
+            spinBtn.textContent = 'SPINNING...';
+            
+            // Random spin amount (multiple rotations + random position)
+            const spins = 5 + Math.random() * 5; // 5-10 full rotations
+            const finalAngle = spins * 360 + Math.random() * 360;
+            
+            // Apply spin animation
+            wheel.style.transition = 'transform 3s cubic-bezier(0.23, 1, 0.320, 1)';
+            wheel.style.transform = `rotate(${finalAngle}deg)`;
+            
+            // Calculate which sector was selected
+            const sectorAngle = 360 / 8; // 8 sectors
+            const normalizedAngle = (360 - (finalAngle % 360)) % 360;
+            const sectorIndex = Math.floor(normalizedAngle / sectorAngle);
+            
+            setTimeout(() => {
+                const categories = Object.keys(skillsDatabase);
+                const selectedCategory = categories[sectorIndex];
+                selectRandomSkill(selectedCategory);
+                
+                // Re-enable button
+                spinBtn.disabled = false;
+                spinBtn.textContent = '🚀 SPIN AGAIN';
+                
+                // Update game state
+                updateGameState();
+                
+            }, 3000);
+        }
+
+        // Select random skill from category
+        function selectRandomSkill(category) {
+            const skills = skillsDatabase[category];
+            const randomSkill = skills[Math.floor(Math.random() * skills.length)];
+            displaySkill({ ...randomSkill, category });
+            
+            // Track category for achievements
+            gameState.categoriesExplored.add(category);
+        }
+
+        // Display selected skill
+        function displaySkill(skill) {
+            const resultCard = document.getElementById('resultCard');
+            const skillTitle = document.getElementById('skillTitle');
+            const skillDescription = document.getElementById('skillDescription');
+            const skillTags = document.getElementById('skillTags');
+            const resources = document.getElementById('resources');
+            const resourceLinks = document.getElementById('resourceLinks');
+            
+            // Update skill information
+            skillTitle.textContent = skill.name;
+            skillDescription.textContent = skill.description;
+            
+            // Update tags
+            skillTags.innerHTML = '';
+            skill.tags.forEach(tag => {
+                const tagElement = document.createElement('span');
+                tagElement.className = 'tag';
+                tagElement.textContent = tag;
+                skillTags.appendChild(tagElement);
+            });
+            
+            // Update resources
+            resourceLinks.innerHTML = '';
+            skill.resources.forEach(resource => {
+                const link = document.createElement('a');
+                link.className = 'resource-link';
+                link.href = resource.url;
+                link.target = '_blank';
+                link.textContent = resource.name;
+                resourceLinks.appendChild(link);
+            });
+            
+            // Show result card and resources
+            resources.style.display = 'block';
+            resultCard.classList.add('show');
+        }
+
+        // Update game state after spin
+        function updateGameState() {
+            gameState.totalSpins++;
+            gameState.dailySpins++;
+            
+            // Check if it's a new day
+            const today = new Date().toDateString();
+            if (gameState.lastSpinDate !== today) {
+                if (gameState.lastSpinDate && 
+                    new Date(today).getTime() - new Date(gameState.lastSpinDate).getTime() === 86400000) {
+                    gameState.streakCount++;
+                } else if (gameState.lastSpinDate) {
+                    gameState.streakCount = 1;
+                } else {
+                    gameState.streakCount = 1;
+                }
+                gameState.dailySpins = 1;
+                gameState.lastSpinDate = today;
+            }
+            
+            // Level up logic
+            const newLevel = Math.floor(gameState.totalSpins / 10) + 1;
+            if (newLevel > gameState.currentLevel) {
+                gameState.currentLevel = newLevel;
+                showLevelUpAnimation();
+            }
+            
+            checkAchievements();
+            updateUI();
+            saveGameState();
+        }
+
+        // Check and unlock achievements
+        function checkAchievements() {
+            // First spin
+            if (gameState.totalSpins >= 1 && !gameState.achievements.firstSpin) {
+                unlockAchievement('firstSpin');
+            }
+            
+            // Five spins
+            if (gameState.totalSpins >= 5 && !gameState.achievements.fiveSpins) {
+                unlockAchievement('fiveSpins');
+            }
+            
+            // Daily challenge (5 spins in a day)
+            if (gameState.dailySpins >= 5 && !gameState.achievements.dailyChallenge) {
+                unlockAchievement('dailyChallenge');
+            }
+            
+            // Week streak
+            if (gameState.streakCount >= 7 && !gameState.achievements.weekStreak) {
+                unlockAchievement('weekStreak');
+            }
+            
+            // Skill explorer (10 different categories)
+            if (gameState.categoriesExplored.size >= 6 && !gameState.achievements.skillExplorer) {
+                unlockAchievement('skillExplorer');
+            }
+            
+            // Level up
+            if (gameState.currentLevel >= 5 && !gameState.achievements.levelUp) {
+                unlockAchievement('levelUp');
+            }
+        }
+
+        // Unlock achievement with animation
+        function unlockAchievement(achievementId) {
+            gameState.achievements[achievementId] = true;
+            const element = document.getElementById(achievementId);
+            element.classList.add('unlocked');
+            
+            // Show notification
+            showNotification(`🎉 Achievement Unlocked: ${element.textContent.split(' - ')[0]}!`);
+        }
+
+        // Show level up animation
+        function showLevelUpAnimation() {
+            showNotification(`🌟 Level Up! You've reached Level ${gameState.currentLevel}!`);
+        }
+
+        // Show notification
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(45deg, #ff6b6b, #ee5a6f);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 12px;
+                box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+                z-index: 1000;
+                animation: slideInRight 0.5s ease-out;
+                font-weight: 600;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.5s ease-in';
+                setTimeout(() => notification.remove(), 500);
+            }, 3000);
+        }
+
+        // Update UI elements
+        function updateUI() {
+            document.getElementById('totalSpins').textContent = gameState.totalSpins;
+            document.getElementById('skillsLearned').textContent = gameState.categoriesExplored.size;
+            document.getElementById('currentLevel').textContent = gameState.currentLevel;
+            document.getElementById('streakCount').textContent = gameState.streakCount;
+            
+            // Update daily progress
+            const dailyProgress = Math.min((gameState.dailySpins / 5) * 100, 100);
+            document.getElementById('dailyProgress').style.width = dailyProgress + '%';
+            
+            // Update achievements UI
+            Object.keys(gameState.achievements).forEach(achievementId => {
+                if (gameState.achievements[achievementId]) {
+                    document.getElementById(achievementId).classList.add('unlocked');
+                }
+            });
+        }
+
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            
+            function createParticle() {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 6) + 's';
+                particlesContainer.appendChild(particle);
+                
+                setTimeout(() => {
+                    particle.remove();
+                }, 9000);
+            }
+            
+            // Create particles periodically
+            setInterval(createParticle, 300);
+        }
+
+        // Add CSS animations for notifications
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize the application
+        function initializeApp() {
+            initializeWheel();
+            loadGameState();
+            createParticles();
+            
+            // Show welcome message for new users
+            if (gameState.totalSpins === 0) {
+                setTimeout(() => {
+                    showNotification('Welcome to SkillSpin Pro! 🎯 Start your learning journey!');
+                }, 1000);
+            }
+        }
+
+        // Start the application when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>
