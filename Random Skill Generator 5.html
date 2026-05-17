@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkillSpin Pro - Random Skill Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .logo {
+            font-size: 3.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 4s ease-in-out infinite;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            color: white;
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+
+        .wheel-section {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: fadeInLeft 1s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wheel-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+            pointer-events: none;
+            border-radius: 25px;
+        }
+
+        .skill-display {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: fadeInRight 1s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-display::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+            pointer-events: none;
+            border-radius: 25px;
+        }
+
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 30px;
+        }
+
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 10px solid #fff;
+            box-shadow: 
+                0 15px 40px rgba(0, 0, 0, 0.25),
+                inset 0 5px 20px rgba(255, 255, 255, 0.3),
+                0 0 0 5px rgba(255, 255, 255, 0.1);
+            transition: transform 4s cubic-bezier(0.23, 1, 0.32, 1);
+            background: conic-gradient(
+                from 0deg,
+                #ff6b6b 0deg 30deg,
+                #feca57 30deg 60deg,
+                #48dbfb 60deg 90deg,
+                #ff9ff3 90deg 120deg,
+                #54a0ff 120deg 150deg,
+                #5f27cd 150deg 180deg,
+                #00d2d3 180deg 210deg,
+                #ff9f43 210deg 240deg,
+                #ee5a6f 240deg 270deg,
+                #0abde3 270deg 300deg,
+                #10ac84 300deg 330deg,
+                #f368e0 330deg 360deg
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .wheel::before {
+            content: '';
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(145deg, #ffffff, #f0f0f0);
+            border-radius: 50%;
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.3),
+                inset 0 2px 10px rgba(255, 255, 255, 0.8),
+                inset 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .wheel::after {
+            content: '🎯';
+            position: absolute;
+            font-size: 2rem;
+            z-index: 15;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid #fff;
+            z-index: 20;
+            filter: drop-shadow(0 8px 15px rgba(0, 0, 0, 0.4));
+        }
+
+        .pointer::after {
+            content: '';
+            position: absolute;
+            top: -38px;
+            left: -18px;
+            width: 0;
+            height: 0;
+            border-left: 18px solid transparent;
+            border-right: 18px solid transparent;
+            border-top: 36px solid linear-gradient(145deg, #667eea, #764ba2);
+            background: linear-gradient(145deg, #667eea, #764ba2);
+        }
+
+        .spin-btn {
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 18px 45px;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 
+                0 15px 35px rgba(102, 126, 234, 0.4),
+                inset 0 2px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+            display: block;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .spin-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s;
+        }
+
+        .spin-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 
+                0 20px 45px rgba(102, 126, 234, 0.5),
+                inset 0 2px 0 rgba(255, 255, 255, 0.3),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .spin-btn:hover::before {
+            left: 100%;
+        }
+
+        .spin-btn:active {
+            transform: translateY(-2px) scale(1.02);
+        }
+
+        .spin-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .spin-btn:disabled:hover {
+            transform: none;
+            box-shadow: 
+                0 15px 35px rgba(102, 126, 234, 0.4),
+                inset 0 2px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .skill-card {
+            text-align: center;
+            padding: 30px;
+            border-radius: 20px;
+            background: linear-gradient(145deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-bottom: 20px;
+            transform: scale(0);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 
+                0 20px 40px rgba(102, 126, 234, 0.3),
+                inset 0 2px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+        }
+
+        .skill-card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+            background-size: 400% 400%;
+            animation: borderGlow 4s ease-in-out infinite;
+            border-radius: 22px;
+            z-index: -1;
+        }
+
+        .skill-card.show {
+            transform: scale(1) rotateX(0deg);
+        }
+
+        .skill-card:hover {
+            transform: scale(1.02) translateY(-5px);
+            box-shadow: 
+                0 25px 50px rgba(102, 126, 234, 0.4),
+                inset 0 2px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .skill-title {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .skill-description {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .skill-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .skill-link {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.95rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: left 0.5s;
+        }
+
+        .skill-link:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .skill-link:hover::before {
+            left: 100%;
+        }
+
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            animation: fadeInUp 1s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .progress-section {
+            margin-top: 30px;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+            pointer-events: none;
+            border-radius: 20px;
+        }
+
+        .progress-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .achievement {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(252, 182, 159, 0.3);
+            border: 2px solid transparent;
+        }
+
+        .achievement::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+            pointer-events: none;
+            border-radius: 13px;
+        }
+
+        .achievement.unlocked {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            transform: scale(1.08);
+            box-shadow: 
+                0 12px 30px rgba(168, 237, 234, 0.4),
+                0 0 20px rgba(254, 214, 227, 0.3);
+            border-color: rgba(168, 237, 234, 0.6);
+            animation: achievementGlow 2s ease-in-out infinite alternate;
+        }
+
+        .achievement:hover {
+            transform: scale(1.1) translateY(-5px);
+            box-shadow: 0 15px 35px rgba(252, 182, 159, 0.4);
+        }
+
+        .achievement.unlocked:hover {
+            transform: scale(1.15) translateY(-8px);
+        }
+
+        .achievement-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .achievement-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: float 6s infinite ease-in-out;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { background-position: 0% 50%; }
+            25% { background-position: 100% 50%; }
+            50% { background-position: 200% 50%; }
+            75% { background-position: 300% 50%; }
+        }
+
+        @keyframes achievementGlow {
+            0% { box-shadow: 0 12px 30px rgba(168, 237, 234, 0.4), 0 0 20px rgba(254, 214, 227, 0.3); }
+            100% { box-shadow: 0 15px 40px rgba(168, 237, 234, 0.6), 0 0 30px rgba(254, 214, 227, 0.5); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInLeft {
+            from { opacity: 0; transform: translateX(-50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes fadeInRight {
+            from { opacity: 0; transform: translateX(50px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-5px) rotate(2deg); }
+            66% { transform: translateY(5px) rotate(-2deg); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        .shimmer::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .wheel-container {
+                width: 250px;
+                height: 250px;
+            }
+            
+            .logo {
+                font-size: 2.5rem;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <header class="header">
+            <h1 class="logo">SkillSpin Pro</h1>
+            <p class="tagline">Discover Your Next Learning Adventure</p>
+        </header>
+
+        <div class="main-content">
+            <div class="wheel-section">
+                <div class="wheel-container">
+                    <div class="wheel" id="wheel"></div>
+                    <div class="pointer"></div>
+                </div>
+                <button class="spin-btn" id="spinBtn">🎯 Spin the Wheel</button>
+            </div>
+
+            <div class="skill-display">
+                <div class="skill-card" id="skillCard">
+                    <div class="skill-title">Ready to Learn?</div>
+                    <div class="skill-description">Spin the wheel to discover an exciting new skill to master today!</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-section">
+            <div class="stat-card">
+                <div class="stat-number" id="totalSpins">0</div>
+                <div class="stat-label">Skills Discovered</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="streak">0</div>
+                <div class="stat-label">Learning Streak</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="level">1</div>
+                <div class="stat-label">Skill Level</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="achievements">0</div>
+                <div class="stat-label">Achievements</div>
+            </div>
+        </div>
+
+        <div class="progress-section">
+            <h3 class="progress-title">🏆 Achievements</h3>
+            <div class="achievement-grid" id="achievementGrid">
+                <div class="achievement" data-achievement="first-spin">
+                    <div class="achievement-icon">🎯</div>
+                    <div class="achievement-name">First Spin</div>
+                </div>
+                <div class="achievement" data-achievement="explorer">
+                    <div class="achievement-icon">🗺️</div>
+                    <div class="achievement-name">Explorer</div>
+                </div>
+                <div class="achievement" data-achievement="dedicated">
+                    <div class="achievement-icon">🔥</div>
+                    <div class="achievement-name">Dedicated</div>
+                </div>
+                <div class="achievement" data-achievement="master">
+                    <div class="achievement-icon">👑</div>
+                    <div class="achievement-name">Skill Master</div>
+                </div>
+                <div class="achievement" data-achievement="tech-focus">
+                    <div class="achievement-icon">💻</div>
+                    <div class="achievement-name">Tech Focus</div>
+                </div>
+                <div class="achievement" data-achievement="creative">
+                    <div class="achievement-icon">🎨</div>
+                    <div class="achievement-name">Creative Soul</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SkillSpinPro {
+            constructor() {
+                this.skills = [
+                    {
+                        name: "Machine Learning",
+                        description: "Master AI algorithms and build intelligent systems that can learn and adapt.",
+                        links: [
+                            { name: "Coursera ML Course", url: "https://www.coursera.org/learn/machine-learning" },
+                            { name: "Kaggle Learn", url: "https://www.kaggle.com/learn" },
+                            { name: "Fast.ai", url: "https://www.fast.ai/" }
+                        ],
+                        category: "tech"
+                    },
+                    {
+                        name: "React Development",
+                        description: "Build dynamic, interactive web applications with React and modern JavaScript.",
+                        links: [
+                            { name: "React Documentation", url: "https://react.dev/" },
+                            { name: "FreeCodeCamp", url: "https://www.freecodecamp.org/learn/front-end-libraries/" },
+                            { name: "React Tutorial", url: "https://reactjs.org/tutorial/tutorial.html" }
+                        ],
+                        category: "tech"
+                    },
+                    {
+                        name: "Data Visualization",
+                        description: "Transform complex data into compelling visual stories using D3.js, Tableau, and more.",
+                        links: [
+                            { name: "D3.js Tutorial", url: "https://observablehq.com/@d3/learn-d3" },
+                            { name: "Tableau Public", url: "https://public.tableau.com/s/" },
+                            { name: "Data Viz Catalogue", url: "https://datavizcatalogue.com/" }
+                        ],
+                        category: "tech"
+                    },
+                    {
+                        name: "Digital Photography",
+                        description: "Capture stunning images and master the art of visual storytelling through photography.",
+                        links: [
+                            { name: "Adobe Photography", url: "https://www.adobe.com/products/photoshop-lightroom.html" },
+                            { name: "PetaPixel", url: "https://petapixel.com/" },
+                            { name: "Udemy Photography", url: "https://www.udemy.com/topic/photography/" }
+                        ],
+                        category: "creative"
+                    },
+                    {
+                        name: "Cloud Computing (AWS)",
+                        description: "Build scalable applications and master cloud infrastructure with Amazon Web Services.",
+                        links: [
+                            { name: "AWS Training", url: "https://aws.amazon.com/training/" },
+                            { name: "A Cloud Guru", url: "https://acloudguru.com/" },
+                            { name: "AWS Free Tier", url: "https://aws.amazon.com/free/" }
+                        ],
+                        category: "tech"
+                    },
+                    {
+                        name: "UI/UX Design",
+                        description: "Create intuitive, beautiful user experiences that delight and engage users.",
+                        links: [
+                            { name: "Figma Academy", url: "https://www.figma.com/academy/" },
+                            { name: "Google UX Course", url: "https://www.coursera.org/professional-certificates/google-ux-design" },
+                            { name: "UX Mastery", url: "https://uxmastery.com/" }
+                        ],
+                        category: "creative"
+                    },
+                    {
+                        name: "Python Programming",
+                        description: "Learn the versatile language powering AI, web development, and data science.",
+                        links: [
+                            { name: "Python.org Tutorial", url: "https://docs.python.org/3/tutorial/" },
+                            { name: "Automate Boring Stuff", url: "https://automatetheboringstuff.com/" },
+                            { name: "Real Python", url: "https://realpython.com/" }
+                        ],
+                        category: "tech"
+                    },
+                    {
+                        name: "Digital Marketing",
+                        description: "Master online marketing strategies, SEO, and social media to grow businesses.",
+                        links: [
+                            { name: "Google Digital Marketing", url: "https://skillshop.withgoogle.com/" },
+                            { name: "HubSpot Academy", url: "https://academy.hubspot.com/" },
+                            { name: "Moz SEO", url: "https://moz.com/beginners-guide-to-seo" }
+                        ],
+                        category: "business"
+                    },
+                    {
+                        name: "Blockchain Development",
+                        description: "Build decentralized applications and smart contracts on blockchain platforms.",
+                        links: [
+                            { name: "Ethereum.org", url: "https://ethereum.org/en/developers/" },
+                            { name: "Solidity Tutorial", url: "https://docs.soliditylang.org/en/latest/" },
+                            { name: "Chainlink Academy", url: "https://chain.link/education" }
+                        ],
+                        category: "tech"
+                    },
+                    {
+                        name: "Video Editing",
+                        description: "Create engaging video content with professional editing techniques and storytelling.",
+                        links: [
+                            { name: "Adobe Premiere Pro", url: "https://www.adobe.com/products/premiere.html" },
+                            { name: "DaVinci Resolve", url: "https://www.blackmagicdesign.com/products/davinciresolve/" },
+                            { name: "YouTube Creator Academy", url: "https://creatoracademy.youtube.com/" }
+                        ],
+                        category: "creative"
+                    },
+                    {
+                        name: "Cybersecurity",
+                        description: "Protect digital assets and learn ethical hacking to secure systems and networks.",
+                        links: [
+                            { name: "Cybrary", url: "https://www.cybrary.it/" },
+                            { name: "OWASP", url: "https://owasp.org/" },
+                            { name: "SANS Institute", url: "https://www.sans.org/" }
+                        ],
+                        category: "tech"
+                    },
+                    {
+                        name: "3D Modeling & Animation",
+                        description: "Create stunning 3D visuals and animations using Blender and industry-standard tools.",
+                        links: [
+                            { name: "Blender Guru", url: "https://www.blenderguru.com/" },
+                            { name: "Blender Foundation", url: "https://www.blender.org/support/tutorials/" },
+                            { name: "CGCookie", url: "https://cgcookie.com/" }
+                        ],
+                        category: "creative"
+                    }
+                ];
+
+                this.currentSkill = null;
+                this.spinning = false;
+                this.stats = this.loadStats();
+                
+                this.init();
+            }
+
+            init() {
+                this.createParticles();
+                this.setupEventListeners();
+                this.updateUI();
+                this.checkAchievements();
+            }
+
+            createParticles() {
+                const particlesContainer = document.getElementById('particles');
+                for (let i = 0; i < 50; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + '%';
+                    particle.style.top = Math.random() * 100 + '%';
+                    particle.style.animationDelay = Math.random() * 6 + 's';
+                    particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                    particlesContainer.appendChild(particle);
+                }
+            }
+
+            setupEventListeners() {
+                document.getElementById('spinBtn').addEventListener('click', () => this.spinWheel());
+            }
+
+            spinWheel() {
+                if (this.spinning) return;
+                
+                this.spinning = true;
+                const spinBtn = document.getElementById('spinBtn');
+                const wheel = document.getElementById('wheel');
+                
+                spinBtn.disabled = true;
+                spinBtn.textContent = '🎯 Spinning...';
+                
+                // Random rotation (minimum 3 full rotations)
+                const minRotation = 1080; // 3 full rotations
+                const maxRotation = 2160; // 6 full rotations
+                const rotation = minRotation + Math.random() * (maxRotation - minRotation);
+                
+                wheel.style.transform = `rotate(${rotation}deg)`;
+                
+                // Determine which skill to show based on final rotation
+                const skillIndex = Math.floor(Math.random() * this.skills.length);
+                
+                setTimeout(() => {
+                    this.showSkill(skillIndex);
+                    this.updateStats();
+                    this.spinning = false;
+                    spinBtn.disabled = false;
+                    spinBtn.textContent = '🎯 Spin Again';
+                }, 4000);
+            }
+
+            showSkill(index) {
+                const skill = this.skills[index];
+                this.currentSkill = skill;
+                
+                const skillCard = document.getElementById('skillCard');
+                skillCard.classList.remove('show');
+                
+                setTimeout(() => {
+                    skillCard.innerHTML = `
+                        <div class="skill-title">${skill.name}</div>
+                        <div class="skill-description">${skill.description}</div>
+                        <div class="skill-links">
+                            ${skill.links.map(link => 
+                                `<a href="${link.url}" target="_blank" class="skill-link">${link.name}</a>`
+                            ).join('')}
+                        </div>
+                    `;
+                    skillCard.classList.add('show');
+                }, 250);
+                
+                // Add pulse effect to spin button
+                document.getElementById('spinBtn').classList.add('pulse');
+                setTimeout(() => {
+                    document.getElementById('spinBtn').classList.remove('pulse');
+                }, 2000);
+            }
+
+            updateStats() {
+                this.stats.totalSpins++;
+                this.stats.streak++;
+                this.stats.level = Math.floor(this.stats.totalSpins / 5) + 1;
+                
+                // Track skill categories
+                if (this.currentSkill) {
+                    if (!this.stats.categories[this.currentSkill.category]) {
+                        this.stats.categories[this.currentSkill.category] = 0;
+                    }
+                    this.stats.categories[this.currentSkill.category]++;
+                }
+                
+                this.saveStats();
+                this.updateUI();
+                this.checkAchievements();
+            }
+
+            updateUI() {
+                document.getElementById('totalSpins').textContent = this.stats.totalSpins;
+                document.getElementById('streak').textContent = this.stats.streak;
+                document.getElementById('level').textContent = this.stats.level;
+                document.getElementById('achievements').textContent = this.stats.achievementsUnlocked.length;
+            }
+
+            checkAchievements() {
+                const achievements = {
+                    'first-spin': this.stats.totalSpins >= 1,
+                    'explorer': this.stats.totalSpins >= 10,
+                    'dedicated': this.stats.totalSpins >= 25,
+                    'master': this.stats.totalSpins >= 50,
+                    'tech-focus': this.stats.categories.tech >= 5,
+                    'creative': this.stats.categories.creative >= 5
+                };
+
+                Object.keys(achievements).forEach(achievementId => {
+                    if (achievements[achievementId] && !this.stats.achievementsUnlocked.includes(achievementId)) {
+                        this.unlockAchievement(achievementId);
+                    }
+                });
+            }
+
+            unlockAchievement(achievementId) {
+                this.stats.achievementsUnlocked.push(achievementId);
+                const achievementElement = document.querySelector(`[data-achievement="${achievementId}"]`);
+                if (achievementElement) {
+                    achievementElement.classList.add('unlocked');
+                    
+                    // Show notification
+                    this.showNotification(`🎉 Achievement Unlocked: ${achievementElement.querySelector('.achievement-name').textContent}!`);
+                }
+                this.saveStats();
+                this.updateUI();
+            }
+
+            showNotification(message) {
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: linear-gradient(135deg, #667eea, #764ba2);
+                    color: white;
+                    padding: 15px 25px;
+                    border-radius: 10px;
+                    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                    z-index: 1000;
+                    animation: slideIn 0.5s ease-out;
+                    max-width: 300px;
+                `;
+                
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.5s ease-out';
+                    setTimeout(() => notification.remove(), 500);
+                }, 3000);
+            }
+
+            loadStats() {
+                const defaultStats = {
+                    totalSpins: 0,
+                    streak: 0,
+                    level: 1,
+                    achievementsUnlocked: [],
+                    categories: {}
+                };
+                
+                // Since localStorage isn't available, return default stats
+                // In a real application, this would load from localStorage
+                return defaultStats;
+            }
+
+            saveStats() {
+                // In a real application, this would save to localStorage
+                // For this demo, stats are kept in memory only
+            }
+        }
+
+        // Add CSS for notifications
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            new SkillSpinPro();
+        });
+    </script>
+</body>
+</html>
